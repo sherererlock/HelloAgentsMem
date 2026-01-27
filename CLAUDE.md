@@ -6,19 +6,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 HelloAgents is a flexible, extensible multi-agent framework built on OpenAI's native API. It provides a streamlined experience for AI agent development with support for memory systems, tool calling, and RAG (Retrieval-Augmented Generation).
 
-## Environment Setup
-
-1. Copy `.env` and configure your LLM API credentials:
-   - `LLM_API_KEY`: Your LLM provider API key (e.g., DashScope/阿里云)
-   - `LLM_BASE_URL`: API endpoint URL
-   - `QDRANT_URL` and `QDRANT_API_KEY`: Vector database configuration
-   - `NEO4J_URI`, `NEO4J_USERNAME`, `NEO4J_PASSWORD`: Graph database configuration
-
-2. Install dependencies and activate the virtual environment:
-   ```bash
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
 ## Architecture
 
 ### Core Components
@@ -61,22 +48,3 @@ HelloAgents is a flexible, extensible multi-agent framework built on OpenAI's na
 - Perceptual Memory: Sensory information
 
 **RAG Pipeline**: Uses MarkItDown for universal document conversion (PDF, Office docs, images, audio), supports chunking, embedding, and vector search with query expansion (MQE, HyDE) and reranking.
-
-## Running Examples
-
-```bash
-# Basic agent with memory and RAG
-python hello.py
-
-# RAG-focused example
-python hello_rag.py
-```
-
-## Important Notes
-
-- The `HelloAgentsLLM` class automatically detects the provider based on environment variables or explicitly passed parameters
-- Tool calling in SimpleAgent is text-based (not OpenAI's function calling API) - it parses special markdown-like syntax
-- RAG data is tagged with `is_rag_data=True` and `data_source="rag_pipeline"` in metadata for filtering
-- Vector storage uses Qdrant with connection pooling via `QdrantConnectionManager`
-- Neo4j is used for graph-based memory relationships
-- The framework uses OpenAI-compatible APIs, making it work with many LLM providers
