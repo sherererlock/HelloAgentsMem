@@ -377,16 +377,18 @@ class QdrantVectorStore:
                 search_params = models.SearchParams(hnsw_ef=self.search_ef, exact=self.search_exact)
             except Exception:
                 search_params = None
-            search_result = self.client.search(
+            
+            # 使用 query_points 替代已废弃/移除的 search 方法
+            search_result = self.client.query_points(
                 collection_name=self.collection_name,
-                query_vector=query_vector,
+                query=query_vector,
                 query_filter=query_filter,
                 limit=limit,
                 score_threshold=score_threshold,
                 with_payload=True,
                 with_vectors=False,
                 search_params=search_params
-            )
+            ).points
             
             # 转换结果格式
             results = []
@@ -491,7 +493,7 @@ class QdrantVectorStore:
             
             info = {
                 "name": self.collection_name,
-                "vectors_count": collection_info.vectors_count,
+                "vectors_count": collection_info.points_count,
                 "indexed_vectors_count": collection_info.indexed_vectors_count,
                 "points_count": collection_info.points_count,
                 "segments_count": collection_info.segments_count,
