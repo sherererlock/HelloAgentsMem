@@ -426,22 +426,127 @@ def create_gradio_ui():
     return demo
 
 
-def main():
-    """主函数 - 启动Gradio Web UI"""
+def run_cli():
+    """启动命令行交互模式"""
     print("\n" + "="*60)
-    print("� 智能文档问答助手")
+    print("🤖 智能文档问答助手 (CLI模式)")
     print("="*60)
-    print("正在启动Web界面...\n")
+    
+    try:
+        user_id = input("请输入用户ID (默认: default_user): ").strip() or "default_user"
+    except EOFError:
+        return
 
-    demo = create_gradio_ui()
-    demo.launch(
-        server_name="0.0.0.0",
-        server_port=7860,
-        share=False,
-        show_error=True
-    )
+    assistant = PDFLearningAssistant(user_id=user_id)
+    print(f"✅ 助手已初始化 (用户: {user_id})")
+    
+    while True:
+        print("\n" + "-"*30)
+        print("可用命令:")
+        print("1. load <path>  - 加载PDF文档")
+        print("2. ask <query>  - 提问")
+        print("3. note <text>  - 添加笔记")
+        print("4. stats        - 查看统计")
+        print("5. report       - 生成报告")
+        print("6. exit         - 退出")
+        print("-"*30)
+        
+        try:
+            cmd_input = input("\n请输入命令 > ").strip()
+            if not cmd_input:
+                continue
+                
+            parts = cmd_input.split(maxsplit=1)
+            cmd = parts[0].lower()
+            args = parts[1] if len(parts) > 1 else ""
+            
+            if cmd in ["exit", "quit", "6"]:
+                print("👋 再见！")
+                break
+                
+            elif cmd in ["load", "1"]:
+                if not args:
+                    print("❌ 请提供PDF文件路径")
+                    continue
+                # Remove quotes if present
+                pdf_path = args.strip('"\'')
+                print(f"📄 正在加载: {pdf_path}...")
+                result = assistant.load_document(pdf_path)
+                if result["success"]:
+                    print(f"✅ {result['message']}")
+                else:
+                    print(f"❌ {result['message']}")
+                    
+            elif cmd in ["ask", "chat", "2"]:
+                if not args:
+                    print("❌ 请输入问题")
+                    continue
+                print("Thinking...")
+                # Check if it's a recall question
+                if any(keyword in args for keyword in ["之前", "学过", "回顾", "历史", "记得"]):
+                    response = assistant.recall(args)
+                    print(f"\n🧠 学习回顾:\n{response}")
+                else:
+                    response = assistant.ask(args)
+                    print(f"\n💡 回答:\n{response}")
+                    
+            elif cmd in ["note", "3"]:
+                if not args:
+                    print("❌ 请输入笔记内容")
+                    continue
+                assistant.add_note(args)
+                print("✅ 笔记已保存")
+                
+            elif cmd in ["stats", "4"]:
+                stats = assistant.get_stats()
+                print("\n📊 学习统计:")
+                for k, v in stats.items():
+                    print(f"- {k}: {v}")
+                    
+            elif cmd in ["report", "5"]:
+                report = assistant.generate_report(save_to_file=True)
+                print("\n✅ 学习报告已生成")
+                if "report_file" in report:
+                    print(f"💾 保存至: {report['report_file']}")
+                
+            else:
+                print(f"❌ 未知命令: {cmd}")
+                
+        except KeyboardInterrupt:
+            print("\n👋 再见！")
+            break
+        except Exception as e:
+            print(f"❌ 发生错误: {str(e)}")
+
+
+def main():
+    """主函数"""
+    import argparse
+    import sys
+    
+    parser = argparse.ArgumentParser(description="智能文档问答助手")
+    parser.add_argument("--cli", action="store_true", help="使用命令行交互模式 (无需Web浏览器)")
+    parser.add_argument("--port", type=int, default=7860, help="Web服务端口 (默认: 7860)")
+    
+    args = parser.parse_args()
+    
+    if args.cli:
+        run_cli()
+    else:
+        print("\n" + "="*60)
+        print("🤖 智能文档问答助手")
+        print("="*60)
+        print("正在启动Web界面...\n")
+        print(f"提示: 如果无法访问Web界面，请使用 'python {sys.argv[0]} --cli' 启动命令行模式")
+
+        demo = create_gradio_ui()
+        demo.launch(
+            server_name="0.0.0.0",
+            server_port=args.port,
+            share=False,
+            show_error=True
+        )
 
 
 if __name__ == "__main__":
     main()
-
