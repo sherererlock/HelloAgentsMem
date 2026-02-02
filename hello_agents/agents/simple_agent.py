@@ -47,6 +47,8 @@ class SimpleAgent(Agent):
         
         # 获取工具描述
         tools_description = self.tool_registry.get_tools_description()
+
+        
         if not tools_description or tools_description == "暂无可用工具":
             return base_prompt
         
@@ -199,6 +201,7 @@ class SimpleAgent(Agent):
             # 调用LLM
             response = self.llm.invoke(messages, **kwargs)
 
+        
             # 检查是否有工具调用
             tool_calls = self._parse_tool_calls(response)
 
